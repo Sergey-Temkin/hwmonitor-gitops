@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hwmonitor-web
+  namespace: monitoring
+  labels:
+    # Important: This matches the kube-prometheus-stack's selector so it picks up this ServiceMonitor
+    release: prometheus-stack
+spec:
+  # We want to scrape the Service that lives in the "default" namespace
+  namespaceSelector:
+    matchNames:
+      - default
+  # Match the Service by its metadata.labels (Service has app: hwmonitor-web)
+  selector:
+    matchLabels:
+      app: hwmonitor-web
+  endpoints:
+    - port: http        # must match the Service's port name
+      path: /metrics    # our Flask app's metrics endpoint
+      interval: 15s
+      scheme: http

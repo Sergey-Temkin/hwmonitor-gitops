@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: hwmonitor-alerts
+  namespace: monitoring
+  labels:
+    # Important: so kube-prometheus-stack Prometheus selects these rules
+    release: prometheus-stack
+spec:
+  groups:
+    - name: hwmonitor.rules
+      rules:
+        - alert: HWMonitorAppHighRestarts
+          # More than 1 restart in the last 5 minutes for our container
+          expr: increase(kube_pod_container_status_restarts_total{namespace="default",container="hwmonitor-web"}[5m]) > 1
+          for: 0m
+          labels:
+            severity: warning
+            app: hwmonitor-web
+          annotations:
+            summary: "hwmonitor-web restarting frequently"
+            description: "Container restarted more than once in 5 minutes (value={{ $value }})."

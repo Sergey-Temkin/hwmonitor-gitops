@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hwmonitor-app
+  namespace: argocd
+  labels:
+    # Who owns this app
+    app.kubernetes.io/part-of: hwmonitor
+    app.kubernetes.io/managed-by: argocd
+spec:
+  # Use the default ArgoCD project
+  project: default
+
+  # --- Source: where to pull manifests from (your Git repo) ---
+  source:
+    repoURL: https://github.com/Sergey-Temkin/hwmonitor-gitops.git   # <-- your repo
+    targetRevision: main                                             # branch or tag
+    path: gitops/app                                                 # <-- only the app manifests (Deployment+Service)
+
+  # --- Destination: where to apply them ---
+  destination:
+    server: https://kubernetes.default.svc                           # current cluster
+    namespace: default                                               # app namespace
+
+  # --- Sync policy: automated GitOps ---
+  syncPolicy:
+    automated:
+      prune: true        # delete cluster objects removed from Git
+      selfHeal: true     # fix drift if someone kubectl-ed different state
+    syncOptions:
+      - CreateNamespace=true  # harmless here (ns already exists)

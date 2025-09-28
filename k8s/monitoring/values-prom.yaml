@@ -1,0 +1,75 @@
+# Namespace note: we'll install into "monitoring"
+# Lightweight tuning for Minikube (2 CPU / 2.2GB RAM)
+
+# -- Disable etcd scraping to avoid TLS/cert issues on Minikube
+kubeEtcd:
+  enabled: false
+
+# -- Reduce scrape targets a bit (these are fine to keep enabled)
+kubeControllerManager:
+  enabled: true
+kubeScheduler:
+  enabled: true
+kubeProxy:
+  enabled: true
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true
+prometheusOperator:
+  enabled: true
+
+# -- Prometheus settings
+prometheus:
+  prometheusSpec:
+    retention: 24h
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  service:
+    type: ClusterIP
+  # Disable PVCs for homework (ephemeral)
+  prometheusSpecExternalLabels: {}
+  thanos: null
+
+# -- Alertmanager settings
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+  service:
+    type: ClusterIP
+
+# -- Grafana settings (default admin: admin / see password below)
+grafana:
+  adminPassword: "Prom-Admin123!"
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  # Import nothing by default; we'll make a small dashboard in Task 4
+  defaultDashboardsEnabled: true
+
+# -- Disable persistent volumes to reduce footprint (ephemeral pods)
+prometheusOperator:
+  admissionWebhooks:
+    patch:
+      enabled: true
+
+# -- Reduce replica counts to 1 (defaults are already 1)

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-hwmonitor
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"  # <-- lets the Grafana sidecar auto-import it
+data:
+  hwmonitor-dashboard.json: |
+    {
+      "title": "HWMonitor - App Overview",
+      "schemaVersion": 39,
+      "style": "dark",
+      "tags": ["hwmonitor"],
+      "timezone": "",
+      "time": {"from": "now-15m", "to": "now"},
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Requests rate by endpoint (5m)",
+          "gridPos": {"h": 9, "w": 24, "x": 0, "y": 0},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "rate(hwmonitor_requests_total[5m])",
+              "legendFormat": "{{endpoint}}",
+              "datasource": { "type": "prometheus", "uid": "prometheus" }
+            }
+          ],
+          "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+          "fieldConfig": { "defaults": {}, "overrides": [] }
+        },
+        {
+          "type": "timeseries",
+          "title": "Request latency p50 (5m)",
+          "gridPos": {"h": 9, "w": 24, "x": 0, "y": 9},
+          "targets": [
+            {
+              "refId": "B",
+              "expr": "histogram_quantile(0.5, sum(rate(hwmonitor_request_latency_seconds_bucket[5m])) by (le))",
+              "legendFormat": "p50 latency",
+              "datasource": { "type": "prometheus", "uid": "prometheus" }
+            }
+          ],
+          "fieldConfig": { "defaults": {}, "overrides": [] }
+        }
+      ],
+      "templating": { "list": [] },
+      "annotations": { "list": [] },
+      "editable": true
+    }
