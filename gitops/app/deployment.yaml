@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hwmonitor-web
+  labels:
+    app: hwmonitor-web
+spec:
+  replicas: 1  # For lab; can scale later
+  selector:
+    matchLabels:
+      app: hwmonitor-web
+  template:
+    metadata:
+      labels:
+        app: hwmonitor-web
+    spec:
+      containers:
+        - name: hwmonitor-web
+          image: hwmonitor-web:1.0  # Local image built into Minikube's Docker
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          # Liveness & readiness use /healthz
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+          # Small resources to fit your cluster limits
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

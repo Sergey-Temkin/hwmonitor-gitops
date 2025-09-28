@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hwmonitor-web
+  labels:
+    app: hwmonitor-web
+spec:
+  type: ClusterIP  # We'll port-forward; can switch to NodePort if you prefer
+  selector:
+    app: hwmonitor-web
+  ports:
+    - name: http
+      port: 8000        # Service port inside the cluster
+      targetPort: 8000  # Container port
